@@ -119,7 +119,7 @@ namespace ClassLibraryORM.Managers
                 if (assignableTypes.Count() > 1)
                 {
                     var sb = new StringBuilder();
-                    sb.AppendLine($"Type {type.FullName} must not be deep assignable from multiple types.");
+                    sb.AppendLine($"Type '{type.FullName}' must not be deep assignable from multiple types.");
                     sb.AppendLine($"Ensure the type can't be assignable from multiple types or ensure all those multiple types are assignable from a single type.");
                     sb.AppendLine($"Deep assignable types:");
                     foreach (var at in assignableTypes)
