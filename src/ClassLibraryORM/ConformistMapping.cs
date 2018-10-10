@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using ClassLibraryORM.Converters;
 using ClassLibraryORM.Managers;
 using ImpromptuInterface;
 using NHibernate.Mapping.ByCode;
@@ -15,20 +16,20 @@ namespace ClassLibraryORM
     public class ConformistMapping<T> : IConformistHoldersProvider
     {
         private static readonly Type[] interfaceTypes = new Type[] {
-            typeof(IClassMapper<dynamic>),
-            typeof(IClassAttributesMapper<dynamic>),
+            typeof(IClassMapper<object>),
+            typeof(IClassAttributesMapper<object>),
             typeof(IEntityAttributesMapper),
             typeof(IEntitySqlsMapper),
-            typeof(IPropertyContainerMapper<dynamic>),
-            typeof(ICollectionPropertiesContainerMapper<dynamic>),
-            typeof(IPlainPropertyContainerMapper<dynamic>),
-            typeof(IBasePlainPropertyContainerMapper<dynamic>),
-            typeof(IMinimalPlainPropertyContainerMapper<dynamic>),
+            typeof(IPropertyContainerMapper<object>),
+            typeof(ICollectionPropertiesContainerMapper<object>),
+            typeof(IPlainPropertyContainerMapper<object>),
+            typeof(IBasePlainPropertyContainerMapper<object>),
+            typeof(IMinimalPlainPropertyContainerMapper<object>),
             typeof(IConformistHoldersProvider)
         };
 
         private readonly ClassMappingProxy proxy;
-        private readonly IClassMapper<dynamic> proxyMapper;
+        private readonly IClassMapper<object> proxyMapper;
 
         public ConformistMapping() : this(TypeManager.Instance) { }
 
@@ -36,7 +37,7 @@ namespace ClassLibraryORM
         {
             var pair = manager.GetInterfaceClassPair(typeof(T));
             proxy = new ClassMappingProxy(pair.Class);
-            proxyMapper = proxy.ActLike<IClassMapper<dynamic>>(interfaceTypes);
+            proxyMapper = proxy.ActLike<IClassMapper<object>>(interfaceTypes);
 
             foreach (var action in ClassMappingManager.Instance.GetActionsForType<T>())
             {
@@ -50,34 +51,31 @@ namespace ClassLibraryORM
 
         private class ClassMappingProxy : DynamicObject
         {
-            public Type GenericType { get; private set; }
+            public Type EntityType { get; private set; }
             public Type ClassMappingType { get; private set; }
             public object ClassMapping { get; private set; }
 
-            public ClassMappingProxy(Type classType)
+            public ClassMappingProxy(Type entityType)
             {
-                GenericType = classType;
-                ClassMappingType = typeof(ClassMapping<>).MakeGenericType(classType);
+                EntityType = entityType;
+                ClassMappingType = typeof(ClassMapping<>).MakeGenericType(entityType);
                 ClassMapping = Activator.CreateInstance(ClassMappingType);
             }
 
             public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
             {
-                var processedArgTypes = new List<ArgumentType>();
-                foreach (var arg in args)
-                {
-                    processedArgTypes.Add(ProcessArgumentType(new ArgumentType { Arg = arg, Type = arg.GetType() }));
-                }
+                var argTypes = args.Select(arg => new ArgumentType(arg));
+                var processedArgTypes = ProcessArgumentTypes(argTypes);
 
                 var processedArgs = processedArgTypes.Select(q => q.Arg).ToArray();
-                var types = processedArgTypes.Select(q => q.Type).ToArray();
+                var processedTypes = processedArgTypes.Select(q => q.Type).ToArray();
 
-                var method = ClassMappingType.GetMethod(binder.Name, types);
+                var method = ClassMappingType.GetMethod(binder.Name, processedTypes);
                 if(method == null)
                 {
                     var sb = new StringBuilder();
-                    sb.AppendLine($"Unable to find method '{binder.Name}(...)' in '{ClassMappingType.Name}<{GenericType.Name}>' accepting the following argument types:");
-                    foreach (var type in types)
+                    sb.AppendLine($"Unable to find method '{binder.Name}(...)' in '{ClassMappingType.Name}<{EntityType.Name}>' accepting the following argument types:");
+                    foreach (var type in processedTypes)
                     {
                         sb.AppendLine(type.FullName);
                     }
@@ -92,21 +90,8 @@ namespace ClassLibraryORM
             {
                 foreach (var argumentType in argumentTypes)
                 {
-                    yield return ProcessArgumentType(argumentType);
+                    yield return Converter.Convert(argumentType, EntityType);
                 }
-            }
-
-            private ArgumentType ProcessArgumentType(ArgumentType argumentType)
-            {
-                // TODO
-
-                return argumentType;
-            }
-
-            private struct ArgumentType
-            {
-                public object Arg { get; set; }
-                public Type Type { get; set; }
             }
         }
     }
