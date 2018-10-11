@@ -1,34 +1,42 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Linq.Expressions;
+using NHibernate.Mapping.ByCode;
 
 namespace ClassLibraryORM.Converters
 {
     internal abstract class Converter
     {
-        protected virtual ArgumentType ApplyConversion(ArgumentType argumentType, Type entityType)
-        {
-            if (argumentType.Arg == null || argumentType.Type == null)
-            {
-                throw new ArgumentException(nameof(argumentType));
-            }
-            if (entityType == null)
-            {
-                throw new ArgumentNullException(nameof(entityType));
-            }
+        protected ArgumentType argumentType;
+        protected Type entityType;
 
-            return argumentType;
+        protected Converter(ArgumentType argumentType, Type entityType)
+        {
+            this.argumentType = argumentType;
+            this.entityType = entityType ?? throw new ArgumentNullException(nameof(entityType));
         }
+
+        protected abstract ArgumentType Apply();
 
         public static ArgumentType Convert(ArgumentType argumentType, Type entityType)
         {
             var type = argumentType.Type;
-            if(type == null)
-            {
 
+            if (type.IsExpression() && type.GenericTypeArguments.Any())
+            {
+                return new ExpressionConverter(argumentType, entityType).Apply();
             }
+            else if (type.IsFunc() && type.GenericTypeArguments.Any())
+            {
+                return new FuncConverter(argumentType, entityType).Apply();
+            }
+            else if (type.IsAction() && type.GenericTypeArguments.Any())
+            {
+                return new ActionConverter(argumentType, entityType).Apply();
+            }
+
+            // no op
+
             return argumentType;
         }
     }
