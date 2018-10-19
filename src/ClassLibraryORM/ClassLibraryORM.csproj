@@ -75,14 +75,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Converters\FuncConverter.cs" />
-    <Compile Include="Converters\ArgumentType.cs" />
+    <Compile Include="Converters\ObjectTypeConverter.cs" />
+    <Compile Include="Converters\Objects\FuncObjectConverter.cs" />
+    <Compile Include="Converters\ObjectType.cs" />
     <Compile Include="Collections\ClassMappingAction.cs" />
     <Compile Include="Collections\ClassMappingActions.cs" />
     <Compile Include="Collections\TypesCorrelation.cs" />
-    <Compile Include="Converters\ActionConverter.cs" />
-    <Compile Include="Converters\Converter.cs" />
-    <Compile Include="Converters\ExpressionConverter.cs" />
+    <Compile Include="Converters\Objects\ActionObjectConverter.cs" />
+    <Compile Include="Converters\Objects\ObjectConverter.cs" />
+    <Compile Include="Converters\Objects\ExpressionObjectConverter.cs" />
+    <Compile Include="Converters\Types\ActionTypeConverter.cs" />
+    <Compile Include="Converters\Types\FuncTypeConverter.cs" />
+    <Compile Include="Converters\Types\ExpressionTypeConverter.cs" />
+    <Compile Include="Converters\Types\TypeConverter.cs" />
     <Compile Include="Managers\ClassMappingManager.cs" />
     <Compile Include="Collections\IMapActionList.cs" />
     <Compile Include="ConformistMapping.cs" />

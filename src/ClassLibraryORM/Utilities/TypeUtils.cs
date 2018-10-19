@@ -110,6 +110,11 @@ namespace System
             return assignableTypes.AsEnumerable();
         }
 
+        public static bool IsNullableType(this Type type)
+        {
+            return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
+        }
+
         public static bool IsAction(this Type type)
         {
             Type generic;

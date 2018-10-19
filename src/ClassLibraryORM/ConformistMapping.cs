@@ -64,10 +64,10 @@ namespace ClassLibraryORM
 
             public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
             {
-                var argTypes = args.Select(arg => new ArgumentType(arg));
+                var argTypes = args.Select(arg => new ObjectType(arg));
                 var processedArgTypes = ProcessArgumentTypes(argTypes);
 
-                var processedArgs = processedArgTypes.Select(q => q.Arg).ToArray();
+                var processedArgs = processedArgTypes.Select(q => q.Obj).ToArray();
                 var processedTypes = processedArgTypes.Select(q => q.Type).ToArray();
 
                 var method = ClassMappingType.GetMethod(binder.Name, processedTypes);
@@ -86,11 +86,11 @@ namespace ClassLibraryORM
                 return true;
             }
 
-            private IEnumerable<ArgumentType> ProcessArgumentTypes(IEnumerable<ArgumentType> argumentTypes)
+            private IEnumerable<ObjectType> ProcessArgumentTypes(IEnumerable<ObjectType> argumentTypes)
             {
                 foreach (var argumentType in argumentTypes)
                 {
-                    yield return Converter.Convert(argumentType, EntityType);
+                    yield return ObjectTypeConverter.Convert(argumentType, EntityType);
                 }
             }
         }
