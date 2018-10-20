@@ -1,60 +1,69 @@
-﻿using System;
-using System.Linq;
-using ClassLibraryORM.Converters.Objects;
+﻿using ClassLibraryORM.Converters.Objects;
 using ClassLibraryORM.Converters.Types;
+using System;
+using System.Linq;
 
 namespace ClassLibraryORM.Converters
 {
     internal static class ObjectTypeConverter
     {
-        public static ObjectType Convert(ObjectType objectType, Type entityType)
+        public static ObjectType Convert(ObjectType objectType, Type targetType)
         {
             var type = objectType.Type;
+            if (type == targetType)
+            {
+                return objectType;
+            }
 
             if (type.GenericTypeArguments.Any())
             {
                 if (type.IsExpression())
                 {
-                    return new ExpressionObjectConverter(objectType, entityType).Convert();
+                    return new ExpressionObjectConverter(objectType, targetType).Convert();
                 }
                 else if (type.IsFunc())
                 {
-                    return new FuncObjectConverter(objectType, entityType).Convert();
+                    return new FuncObjectConverter(objectType, targetType).Convert();
                 }
                 else if (type.IsAction())
                 {
-                    return new ActionObjectConverter(objectType, entityType).Convert();
+                    return new ActionObjectConverter(objectType, targetType).Convert();
                 }
             }
             else if (type == typeof(object))
             {
-                return new ObjectConverter(objectType, entityType).Convert();
+                return new ObjectConverter(objectType, targetType).Convert();
             }
 
             // no operation
             return objectType;
         }
 
-        public static Type Convert(Type type, Type entityType)
+        public static Type Convert(Type type, Type targetType)
         {
+            if (type == targetType)
+            {
+                return targetType;
+            }
+
             if (type.GenericTypeArguments.Any())
             {
                 if (type.IsExpression())
                 {
-                    return new ExpressionTypeConverter(type, entityType).Convert();
+                    return new ExpressionTypeConverter(type, targetType).Convert();
                 }
                 else if (type.IsFunc())
                 {
-                    return new FuncTypeConverter(type, entityType).Convert();
+                    return new FuncTypeConverter(type, targetType).Convert();
                 }
                 else if (type.IsAction())
                 {
-                    return new ActionTypeConverter(type, entityType).Convert();
+                    return new ActionTypeConverter(type, targetType).Convert();
                 }
             }
-            else if(type == typeof(object))
+            else if (type == typeof(object))
             {
-                return new TypeConverter(type, entityType).Convert();
+                return new TypeConverter(type, targetType).Convert();
             }
 
             // no operation

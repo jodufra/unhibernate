@@ -24,9 +24,8 @@ namespace ClassLibraryORM.Converters.Objects
             catch (Exception)
             {
                 // silent exception
+                return objectType;
             }
-
-            return objectType;
         }
     }
 }
