@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace ClassLibraryORM.Converters.Objects
 {
@@ -30,7 +31,7 @@ namespace ClassLibraryORM.Converters.Objects
             var returnType = lambdaExpression.ReturnType;
             if (returnType == typeof(object))
             {
-                newObjectType = ConvertReturnValue(newObjectType);
+                newObjectType = ConvertReturnType(newObjectType);
             }
 
             foreach (var parameter in lambdaExpression.Parameters)
@@ -44,7 +45,7 @@ namespace ClassLibraryORM.Converters.Objects
             return newObjectType;
         }
 
-        private ObjectType ConvertReturnValue(ObjectType newObjectType)
+        protected ObjectType ConvertReturnType(ObjectType newObjectType)
         {
             var expression = objectType.Obj as LambdaExpression;
 
@@ -68,23 +69,19 @@ namespace ClassLibraryORM.Converters.Objects
             return new ObjectType(newExpression);
         }
 
-        private ObjectType ConvertParamenter(ParameterExpression parameter, ObjectType newObjectType)
+        protected ObjectType ConvertParamenter(ParameterExpression parameter, ObjectType newObjectType)
         {
             var type = parameter.Type;
-
             var newType = ObjectTypeConverter.Convert(type, targetType);
+
             if (type == newType)
             {
                 return newObjectType;
             }
 
-            var newParameter = Expression.Parameter(newType);
+            var newParameter = Expression.Parameter(newType, parameter.Name);
 
-            var typeArguments = new Type[] {
-                newType
-            };
-
-            var typeOfVisitor = typeof(ParameterVisitor<>).MakeGenericType(typeArguments);
+            var typeOfVisitor = typeof(ParameterVisitor);
             var visitor = (ExpressionVisitor)Activator.CreateInstance(typeOfVisitor, newParameter);
 
             var expression = objectType.Obj as LambdaExpression;
@@ -99,20 +96,26 @@ namespace ClassLibraryORM.Converters.Objects
             protected override Expression VisitLambda<T>(Expression<T> node)
             {
                 var delegateType = typeof(Func<,>).MakeGenericType(typeof(TSource), typeof(TReturnValue));
-                return Expression.Lambda(delegateType, Visit(node.Body), node.Parameters);
+                var body = Visit(node.Body);
+
+                return Expression.Lambda(delegateType, body, node.Parameters);
             }
 
             protected override Expression VisitMember(MemberExpression node)
             {
-                if (node.Member.DeclaringType == typeof(TSource))
+                if (node.Member.DeclaringType != typeof(TSource))
                 {
-                    return Expression.Property(Visit(node.Expression), node.Member.Name);
+                    return base.VisitMember(node);
                 }
-                return base.VisitMember(node);
+
+                var memberName = node.Member.Name;
+                var inner = Visit(node.Expression);
+
+                return Expression.Property(inner, memberName);
             }
         }
 
-        private class ParameterVisitor<T> : ExpressionVisitor
+        private class ParameterVisitor : ExpressionVisitor
         {
             private readonly ParameterExpression _parameter;
 
@@ -121,17 +124,24 @@ namespace ClassLibraryORM.Converters.Objects
                 _parameter = parameter;
             }
 
-            protected override Expression VisitParameter(ParameterExpression node) => _parameter;
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                if (node.Type != typeof(object))
+                {
+                    return base.VisitParameter(node);
+                }
+
+                return _parameter;
+            }
 
             protected override Expression VisitMember(MemberExpression node)
             {
-                if (node.Member.MemberType != System.Reflection.MemberTypes.Property)
+                if (node.Member.MemberType != MemberTypes.Property)
                 {
-                    throw new NotImplementedException();
+                    return base.VisitMember(node);
                 }
 
-                var memberName = node.Member.Name;
-                var property = typeof(T).GetProperty(memberName);
+                var property = (PropertyInfo)node.Member;
                 var inner = Visit(node.Expression);
 
                 return Expression.Property(inner, property);

@@ -115,6 +115,11 @@ namespace System
             return type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
         }
 
+        public static bool IsDelegateType(this Type type)
+        {
+            return typeof(Delegate).IsAssignableFrom(type?.BaseType ?? type);
+        }
+
         public static bool IsAction(this Type type)
         {
             Type generic;

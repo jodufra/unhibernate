@@ -75,6 +75,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\Objects\DelegateObjectConverter.cs" />
     <Compile Include="Converters\ObjectTypeConverter.cs" />
     <Compile Include="Converters\Objects\FuncObjectConverter.cs" />
     <Compile Include="Converters\ObjectType.cs" />

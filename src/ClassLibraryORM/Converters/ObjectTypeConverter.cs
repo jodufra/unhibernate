@@ -1,7 +1,6 @@
 ﻿using ClassLibraryORM.Converters.Objects;
 using ClassLibraryORM.Converters.Types;
 using System;
-using System.Linq;
 
 namespace ClassLibraryORM.Converters
 {
@@ -10,32 +9,37 @@ namespace ClassLibraryORM.Converters
         public static ObjectType Convert(ObjectType objectType, Type targetType)
         {
             var type = objectType.Type;
+
             if (type == targetType)
             {
                 return objectType;
             }
 
-            if (type.GenericTypeArguments.Any())
+            if (type.IsExpression())
             {
-                if (type.IsExpression())
-                {
-                    return new ExpressionObjectConverter(objectType, targetType).Convert();
-                }
-                else if (type.IsFunc())
-                {
-                    return new FuncObjectConverter(objectType, targetType).Convert();
-                }
-                else if (type.IsAction())
-                {
-                    return new ActionObjectConverter(objectType, targetType).Convert();
-                }
+                return new ExpressionObjectConverter(objectType, targetType).Convert();
             }
-            else if (type == typeof(object))
+
+            if (type.IsFunc())
+            {
+                return new FuncObjectConverter(objectType, targetType).Convert();
+            }
+
+            if (type.IsAction())
+            {
+                return new ActionObjectConverter(objectType, targetType).Convert();
+            }
+
+            if (type.IsDelegateType())
+            {
+                return new DelegateObjectConverter(objectType, targetType).Convert();
+            }
+
+            if (type == typeof(object))
             {
                 return new ObjectConverter(objectType, targetType).Convert();
             }
-
-            // no operation
+            
             return objectType;
         }
 
@@ -46,27 +50,26 @@ namespace ClassLibraryORM.Converters
                 return targetType;
             }
 
-            if (type.GenericTypeArguments.Any())
+            if (type.IsExpression())
             {
-                if (type.IsExpression())
-                {
-                    return new ExpressionTypeConverter(type, targetType).Convert();
-                }
-                else if (type.IsFunc())
-                {
-                    return new FuncTypeConverter(type, targetType).Convert();
-                }
-                else if (type.IsAction())
-                {
-                    return new ActionTypeConverter(type, targetType).Convert();
-                }
+                return new ExpressionTypeConverter(type, targetType).Convert();
             }
-            else if (type == typeof(object))
+
+            if (type.IsFunc())
+            {
+                return new FuncTypeConverter(type, targetType).Convert();
+            }
+
+            if (type.IsAction())
+            {
+                return new ActionTypeConverter(type, targetType).Convert();
+            }
+
+            if (type == typeof(object))
             {
                 return new TypeConverter(type, targetType).Convert();
             }
-
-            // no operation
+            
             return type;
         }
     }

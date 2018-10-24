@@ -18,12 +18,11 @@ namespace ClassLibraryORM.Converters.Objects
             try
             {
                 var obj = System.Convert.ChangeType(objectType.Obj, targetType);
-                var newObjectType = new ObjectType(obj);
-                return newObjectType;
+                return new ObjectType(obj);
             }
             catch (Exception)
             {
-                // silent exception
+                // fallback by returning the original objectType
                 return objectType;
             }
         }

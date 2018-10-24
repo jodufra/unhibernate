@@ -2,7 +2,7 @@
 
 namespace ClassLibraryORM.Converters.Objects
 {
-    internal class FuncObjectConverter : ObjectConverter
+    internal class FuncObjectConverter : DelegateObjectConverter
     {
         public FuncObjectConverter(ObjectType objectType, Type targetType) : base(objectType, targetType)
         {
@@ -10,12 +10,6 @@ namespace ClassLibraryORM.Converters.Objects
             {
                 throw new ArgumentOutOfRangeException(nameof(objectType));
             }
-        }
-
-        public override ObjectType Convert()
-        {
-            // TODO
-            throw new NotImplementedException();
         }
     }
 }

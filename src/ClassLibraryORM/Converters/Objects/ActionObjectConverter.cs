@@ -2,7 +2,7 @@
 
 namespace ClassLibraryORM.Converters.Objects
 {
-    internal class ActionObjectConverter : ObjectConverter
+    internal class ActionObjectConverter : DelegateObjectConverter
     {
         public ActionObjectConverter(ObjectType objectType, Type targetType) : base(objectType, targetType)
         {
@@ -10,12 +10,6 @@ namespace ClassLibraryORM.Converters.Objects
             {
                 throw new ArgumentOutOfRangeException(nameof(objectType));
             }
-        }
-
-        public override ObjectType Convert()
-        {
-            // TODO
-            throw new NotImplementedException();
         }
     }
 }

@@ -74,7 +74,7 @@ namespace ClassLibraryORM
                 if(method == null)
                 {
                     var sb = new StringBuilder();
-                    sb.AppendLine($"Unable to find method '{binder.Name}(...)' in '{ClassMappingType.Name}<{EntityType.Name}>' accepting the following argument types:");
+                    sb.AppendLine($"Unable to find method '{binder.Name}({string.Join(", ", binder.CallInfo.ArgumentNames)})' in '{ClassMappingType.Name}<{EntityType.Name}>' accepting the following argument types:");
                     foreach (var type in processedTypes)
                     {
                         sb.AppendLine(type.FullName);
