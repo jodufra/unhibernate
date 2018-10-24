@@ -8,7 +8,7 @@ namespace ClassLibraryORM.Converters.Objects
     {
         public ExpressionObjectConverter(ObjectType objectType, Type targetType) : base(objectType, targetType)
         {
-            if (!objectType.Type.IsExpression())
+            if (!objectType.Type.IsExpressionType())
             {
                 throw new ArgumentOutOfRangeException(nameof(objectType));
             }

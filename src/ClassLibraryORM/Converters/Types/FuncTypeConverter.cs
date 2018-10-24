@@ -6,7 +6,7 @@ namespace ClassLibraryORM.Converters.Types
     {
         public FuncTypeConverter(Type srcType, Type targetType) : base(srcType, targetType)
         {
-            if (!srcType.IsFunc())
+            if (!srcType.IsFuncType())
             {
                 throw new ArgumentOutOfRangeException(nameof(srcType));
             }

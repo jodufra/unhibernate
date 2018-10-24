@@ -6,7 +6,7 @@ namespace ClassLibraryORM.Converters.Types
     {
         public ActionTypeConverter(Type srcType, Type targetType) : base(srcType, targetType)
         {
-            if (!srcType.IsAction())
+            if (!srcType.IsActionType())
             {
                 throw new ArgumentOutOfRangeException(nameof(srcType));
             }

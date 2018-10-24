@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 
 namespace ClassLibraryORM.Converters.Objects
 {
@@ -15,8 +17,21 @@ namespace ClassLibraryORM.Converters.Objects
                 return base.Convert();
             }
 
+            var parameters = delegat.Method.GetParameters();
+            var returnParameter = delegat.Method.ReturnParameter;
+
+            if (returnParameter.ParameterType != typeof(object) && !parameters.Any(q => q.ParameterType == typeof(object)))
+            {
+                // return original ojectType
+                return objectType;
+            }
 
             throw new NotImplementedException();
+        }
+
+        private ParameterInfo[] ConvertParameters(ParameterInfo[] parameters)
+        {
+            return parameters;
         }
     }
 }

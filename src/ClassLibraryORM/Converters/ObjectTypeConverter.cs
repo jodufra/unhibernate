@@ -15,17 +15,17 @@ namespace ClassLibraryORM.Converters
                 return objectType;
             }
 
-            if (type.IsExpression())
+            if (type.IsExpressionType())
             {
                 return new ExpressionObjectConverter(objectType, targetType).Convert();
             }
 
-            if (type.IsFunc())
+            if (type.IsFuncType())
             {
                 return new FuncObjectConverter(objectType, targetType).Convert();
             }
 
-            if (type.IsAction())
+            if (type.IsActionType())
             {
                 return new ActionObjectConverter(objectType, targetType).Convert();
             }
@@ -50,17 +50,17 @@ namespace ClassLibraryORM.Converters
                 return targetType;
             }
 
-            if (type.IsExpression())
+            if (type.IsExpressionType())
             {
                 return new ExpressionTypeConverter(type, targetType).Convert();
             }
 
-            if (type.IsFunc())
+            if (type.IsFuncType())
             {
                 return new FuncTypeConverter(type, targetType).Convert();
             }
 
-            if (type.IsAction())
+            if (type.IsActionType())
             {
                 return new ActionTypeConverter(type, targetType).Convert();
             }

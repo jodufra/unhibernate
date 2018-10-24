@@ -6,7 +6,7 @@ namespace ClassLibraryORM.Converters.Types
     {
         public ExpressionTypeConverter(Type srcType, Type targetType) : base(srcType, targetType)
         {
-            if (!srcType.IsExpression())
+            if (!srcType.IsExpressionType())
             {
                 throw new ArgumentOutOfRangeException(nameof(srcType));
             }

@@ -70,7 +70,7 @@ namespace ClassLibraryORM
                 var processedArgs = processedArgTypes.Select(q => q.Obj).ToArray();
                 var processedTypes = processedArgTypes.Select(q => q.Type).ToArray();
 
-                var method = ClassMappingType.GetMethod(binder.Name, processedTypes);
+                var method = ClassMappingType.GetMethodExt(binder.Name, processedTypes);
                 if(method == null)
                 {
                     var sb = new StringBuilder();
