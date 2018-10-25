@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -6,7 +8,7 @@ namespace ClassLibraryORM.Converters.Objects
 {
     internal class ExpressionObjectConverter : ObjectConverter
     {
-        public ExpressionObjectConverter(ObjectType objectType, Type targetType) : base(objectType, targetType)
+        public ExpressionObjectConverter(object instance, ObjectType objectType, Type targetType) : base(instance, objectType, targetType)
         {
             if (!objectType.Type.IsExpressionType())
             {
@@ -20,12 +22,7 @@ namespace ClassLibraryORM.Converters.Objects
             {
                 return objectType;
             }
-
-            if (lambdaExpression.Parameters.Count > 1)
-            {
-                throw new NotImplementedException();
-            }
-
+            
             var newObjectType = objectType;
 
             var returnType = lambdaExpression.ReturnType;
@@ -49,21 +46,16 @@ namespace ClassLibraryORM.Converters.Objects
         {
             var expression = objectType.Obj as LambdaExpression;
 
-            var type = expression.ReturnType;
-            var newType = ObjectTypeConverter.Convert(type, targetType);
+            var returnType = expression.ReturnType;
+            var newReturnType = ObjectTypeConverter.Convert(returnType, targetType);
 
-            if (type == newType)
+            if (returnType == newReturnType)
             {
                 return newObjectType;
             }
-
-            var typeArguments = new Type[] {
-                expression.Parameters[0].Type,
-                newType
-            };
-
-            var typeOfVisitor = typeof(ReturnTypeVisitor<,>).MakeGenericType(typeArguments);
-            var visitor = (ExpressionVisitor)Activator.CreateInstance(typeOfVisitor);
+            
+            var typeOfVisitor = typeof(ReturnTypeVisitor);
+            var visitor = (ExpressionVisitor)Activator.CreateInstance(typeOfVisitor, expression.Parameters.Select(q => q.Type), newReturnType);
             var newExpression = visitor.Visit(expression);
 
             return new ObjectType(newExpression);
@@ -91,11 +83,25 @@ namespace ClassLibraryORM.Converters.Objects
             return new ObjectType(newExpression);
         }
 
-        private class ReturnTypeVisitor<TSource, TReturnValue> : ExpressionVisitor
+        private class ReturnTypeVisitor : ExpressionVisitor
         {
+            private readonly IEnumerable<Type> argumentTypes;
+            private readonly Type returnType;
+
+            public ReturnTypeVisitor(IEnumerable<Type> argumentTypes, Type returnType)
+            {
+                this.argumentTypes = argumentTypes ?? throw new ArgumentNullException(nameof(argumentTypes));
+                this.returnType = returnType ?? throw new ArgumentNullException(nameof(returnType));
+            }
+
             protected override Expression VisitLambda<T>(Expression<T> node)
             {
-                var delegateType = typeof(Func<,>).MakeGenericType(typeof(TSource), typeof(TReturnValue));
+                var types = new List<Type>(argumentTypes)
+                {
+                    returnType
+                }.ToArray();
+
+                var delegateType = typeof(Func<>).MakeGenericType(types);
                 var body = Visit(node.Body);
 
                 return Expression.Lambda(delegateType, body, node.Parameters);
@@ -103,7 +109,7 @@ namespace ClassLibraryORM.Converters.Objects
 
             protected override Expression VisitMember(MemberExpression node)
             {
-                if (node.Member.DeclaringType != typeof(TSource))
+                if (node.Member.DeclaringType != typeof(object))
                 {
                     return base.VisitMember(node);
                 }

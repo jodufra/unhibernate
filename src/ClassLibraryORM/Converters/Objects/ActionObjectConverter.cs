@@ -4,7 +4,7 @@ namespace ClassLibraryORM.Converters.Objects
 {
     internal class ActionObjectConverter : DelegateObjectConverter
     {
-        public ActionObjectConverter(ObjectType objectType, Type targetType) : base(objectType, targetType)
+        public ActionObjectConverter(object instance, ObjectType objectType, Type targetType) : base(instance, objectType, targetType)
         {
             if (!objectType.Type.IsActionType())
             {

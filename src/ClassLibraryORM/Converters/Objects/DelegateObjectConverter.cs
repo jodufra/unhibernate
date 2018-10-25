@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace ClassLibraryORM.Converters.Objects
 {
     internal class DelegateObjectConverter : ObjectConverter
     {
-        public DelegateObjectConverter(ObjectType objectType, Type targetType) : base(objectType, targetType)
+        public DelegateObjectConverter(object instance, ObjectType objectType, Type targetType) : base(instance, objectType, targetType)
         {
         }
 
@@ -20,11 +21,17 @@ namespace ClassLibraryORM.Converters.Objects
             var parameters = delegat.Method.GetParameters();
             var returnParameter = delegat.Method.ReturnParameter;
 
-            if (returnParameter.ParameterType != typeof(object) && !parameters.Any(q => q.ParameterType == typeof(object)))
+            if (!RequiresConversion(parameters, returnParameter))
             {
                 // return original ojectType
                 return objectType;
             }
+
+            var domain = AppDomain.CurrentDomain;
+            var asmName = delegat.Method.DeclaringType.Assembly.GetName();
+            var asmBuilder = domain.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.RunAndCollect);
+            var module = asmBuilder.DefineDynamicModule(asmName.Name, $"{asmName.Name}.dll");
+
 
             throw new NotImplementedException();
         }
@@ -32,6 +39,16 @@ namespace ClassLibraryORM.Converters.Objects
         private ParameterInfo[] ConvertParameters(ParameterInfo[] parameters)
         {
             return parameters;
+        }
+
+        private static bool RequiresConversion(ParameterInfo[] argumentParameters, ParameterInfo returnParameter)
+        {
+            return !RequiresConversion(returnParameter.ParameterType) && !argumentParameters.Any(q => RequiresConversion(q.ParameterType));
+        }
+
+        private static bool RequiresConversion(Type type)
+        {
+            return type == typeof(object) || type.GenericTypeArguments.Any(RequiresConversion);
         }
     }
 }

@@ -6,7 +6,7 @@ namespace ClassLibraryORM.Converters
 {
     internal static class ObjectTypeConverter
     {
-        public static ObjectType Convert(ObjectType objectType, Type targetType)
+        public static ObjectType Convert(object instance, ObjectType objectType, Type targetType)
         {
             var type = objectType.Type;
 
@@ -17,27 +17,27 @@ namespace ClassLibraryORM.Converters
 
             if (type.IsExpressionType())
             {
-                return new ExpressionObjectConverter(objectType, targetType).Convert();
+                return new ExpressionObjectConverter(instance, objectType, targetType).Convert();
             }
 
             if (type.IsFuncType())
             {
-                return new FuncObjectConverter(objectType, targetType).Convert();
+                return new FuncObjectConverter(instance, objectType, targetType).Convert();
             }
 
             if (type.IsActionType())
             {
-                return new ActionObjectConverter(objectType, targetType).Convert();
+                return new ActionObjectConverter(instance, objectType, targetType).Convert();
             }
 
             if (type.IsDelegateType())
             {
-                return new DelegateObjectConverter(objectType, targetType).Convert();
+                return new DelegateObjectConverter(instance, objectType, targetType).Convert();
             }
 
             if (type == typeof(object))
             {
-                return new ObjectConverter(objectType, targetType).Convert();
+                return new ObjectConverter(instance, objectType, targetType).Convert();
             }
             
             return objectType;

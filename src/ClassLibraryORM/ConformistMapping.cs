@@ -90,7 +90,7 @@ namespace ClassLibraryORM
             {
                 foreach (var argumentType in argumentTypes)
                 {
-                    yield return ObjectTypeConverter.Convert(argumentType, EntityType);
+                    yield return ObjectTypeConverter.Convert(ClassMapping, argumentType, EntityType);
                 }
             }
         }

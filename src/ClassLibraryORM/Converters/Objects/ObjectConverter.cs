@@ -4,11 +4,13 @@ namespace ClassLibraryORM.Converters.Objects
 {
     internal class ObjectConverter
     {
+        protected object instance;
         protected ObjectType objectType;
         protected Type targetType;
 
-        public ObjectConverter(ObjectType objectType, Type targetType)
+        public ObjectConverter(object instance, ObjectType objectType, Type targetType)
         {
+            this.instance = instance ?? throw new ArgumentNullException(nameof(instance));
             this.objectType = objectType;
             this.targetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
         }
